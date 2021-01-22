@@ -40,7 +40,7 @@ switch (osType) {
                 customPath: './notifier/snoreToast/snoretoast' + '-x' + (is64Bit ? '64' : '86') + '.exe',
                 ...options,
             });
-            const _notify = notifier._notify;
+            const _notify = notifier.notify;
             notifier._notify = (opt) => typeof opt === 'string' ? _notify({ title: 'Discord Cryptominer Presence', appID: settings.appID, message: opt }) : _notify(opt);
             notifier.Notification = WindowsToaster;
         }
@@ -56,7 +56,7 @@ module.exports.notifyError = (err, address = '') => {
     const text = `Error (${address}): ${err}`;
     if (notificationHistory.has(text)) return;
     notificationHistory.add(text);
-    notifier({
+    notifier.notify({
         message: text,
         type: 'error',
         appID: settings.appID,
