@@ -29,10 +29,10 @@ jobs:
         run: npm ci
       
       - name: Build
-        run: npm run build
+        run: npm run build release
       
       - name: Create Build Archive
-        run: zip -r discord-cryptominer-presence_win64-${{ env.RELEASE_VERSION }}.zip dist
+        run: cd dist && zip -r discord-cryptominer-presence_win64-${{ env.RELEASE_VERSION }}.zip .
 
       - name: Create Release
         id: create_release

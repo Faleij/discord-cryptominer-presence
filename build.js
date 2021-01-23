@@ -13,4 +13,5 @@ const createNodewExe = require('create-nodew-exe');
         src: './dist/discord-cryptominer-presence_debug.exe',
         dst: './dist/discord-cryptominer-presence.exe',
     });
+    if (process.argv.includes('release')) await fse.remove('./dist/discord-cryptominer-presence_debug.exe');
 })().catch(err => console.error(err));
