@@ -28,6 +28,7 @@
     "appId": "faleij.discord-cryptominer-presence"
   },
   "devDependencies": {
+    "create-nodew-exe": "^1.0.6",
     "fs-extra": "^9.1.0",
     "pkg": "^4.4.9"
   }
