@@ -8,18 +8,21 @@ const { loadStatsFromMultiple } = require('./claymore-api-utils');
 let clearedActivity;
 async function setActivity() {
     try {
-        let stats = await loadStatsFromMultiple(settings.miner.address.split(','), (err, address) => {
+        const addresses = settings.miner.address.split(',');
+        let stats = await loadStatsFromMultiple(addresses, (err, address) => {
             console.error(`Error using server ${address}`, err);
-            notifier.notifyError(err, address);
+            notifier.notifyError(err, address, address);
             log(`Error using server ${address}: ` + (err.stack || err.toString()));
         });
+        addresses.forEach(notifier.clearErrorNotification);
         if (!stats) {
             if (!clearedActivity) {
                 rpc.clearActivity();
                 clearedActivity = true;
             }
-            notifier.notifyError('No miner api endpoints reachable!');
+            notifier.notifyError('No miner api endpoints reachable!', '', 'noapi');
         } else {
+            notifier.clearErrorNotification('noapi');
             // const stats = await claymoreAPI.getStatsJson('localhost', 3333);
             const pool = url.parse(stats.ethash.pool || stats.dcoin.pool).hostname;
             const tempSensors = stats.sensors.filter(c => Number.isFinite(c.temperature));

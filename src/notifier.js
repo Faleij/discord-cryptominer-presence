@@ -52,14 +52,21 @@ switch (osType) {
 module.exports = notifier;
 
 const notificationHistory = new Set();
-module.exports.notifyError = (err, address = '') => {
-    const text = `Error (${address}): ${err}`;
-    if (notificationHistory.has(text)) return;
-    notificationHistory.add(text);
+
+module.exports.notifyError = (err, address = '', id) => {
+    const text = address.length ? `[${address}]: ${err}` : err.toString();
+    id = id || text;
+    if (notificationHistory.has(id)) return;
+    notificationHistory.add(id);
     notifier.notify({
+        title: 'Error',
         message: text,
         type: 'error',
         appID: settings.appID,
     });
-    setTimeout(() => notificationHistory.delete(text), 5*60e3);
+    if (!id) setTimeout(() => notificationHistory.delete(id), 30*60e3);
+};
+
+module.exports.clearErrorNotification = (id) => {
+    notificationHistory.delete(id);
 };
