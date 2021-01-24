@@ -22,8 +22,8 @@ jobs:
         with:
           node-version: '14.x'
 
-      - name: Optional zip install
-        run: command -v zip >/dev/null 2>&1 || { apt-get update && apt-get install zip; exit 1; }
+      - name: Install OS applications
+        run: apt-get update && apt install zip libdigest-sha3-perl
 
       - name: Install deps
         run: npm ci
