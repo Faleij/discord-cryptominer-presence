@@ -23,7 +23,7 @@ jobs:
           node-version: '14.x'
 
       - name: Install OS applications
-        run: apt-get update && apt install zip libdigest-sha3-perl
+        run: sudo apt-get update && sudo apt-get install zip libdigest-sha3-perl
 
       - name: Install deps
         run: npm ci
