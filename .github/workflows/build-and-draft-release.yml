@@ -52,7 +52,7 @@ jobs:
           prerelease: false
       
       - name: Upload win64 artifact
-        id: upload-release-asset 
+        id: upload-win64
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -63,7 +63,7 @@ jobs:
           asset_content_type: application/zip
       
       - name: Upload win64 artifact SHA3
-        id: upload-release-asset 
+        id: upload-win64-sha3
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
