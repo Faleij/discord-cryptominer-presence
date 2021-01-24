@@ -5,7 +5,7 @@ const createNodewExe = require('create-nodew-exe');
 (async () => {
     await Promise.all([
         fse.copy('./node_modules/node-notifier/vendor/notifu', './dist/notifier/notifu'),
-        fse.copy('./node_modules/node-notifier/vendor/snoretoast', './dist/notifier/snoretoast'),
+        fse.copy('./node_modules/node-notifier/vendor/snoreToast', './dist/notifier/snoreToast'),
         fse.copy('./node_modules/systray2/traybin/tray_windows_release.exe', './dist/traybin/tray_windows_release.exe'),
     ]);
     await exec([ '.', '--out-path', './dist', '--options', 'always-compact' ]);
