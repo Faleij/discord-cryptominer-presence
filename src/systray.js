@@ -6,10 +6,16 @@ const rpc = require('./discord');
 const settings = require('./settings');
 const fs = require('fs/promises');
 const { execFile } = require('child_process');
+const exitHook = require('async-exit-hook');
 
 const iconPath = path.join(__dirname, 'eth.ico');
+const iconBuffer = _fs.readFileSync(iconPath);
 const winStartupPath = process.env.APPDATA + '/Microsoft/Windows/Start Menu/Programs/Startup/Discord Cryptominer Presence.lnk';
 const platform = os.platform();
+
+// copy icon to os tmp dir
+fs.writeFile(path.join(os.tmpdir(), 'eth.ico'), iconBuffer, err => console.error(err));
+
 function installStartup() {
     if (platform !== 'win32') return;
     console.log('installStartup', platform, process.execPath);
@@ -69,7 +75,7 @@ const items = [
 const systray = new SysTray({
     menu: {
         // you should using .png icon in macOS/Linux, but .ico format in windows
-        icon: _fs.readFileSync(iconPath).toString('base64'),
+        icon: iconBuffer.toString('base64'),
         title: "Discord Cryptominer Presence",
         tooltip: "Discord Cryptominer Presence",
         items,
@@ -84,6 +90,11 @@ systray.onClick(action => {
     }
 });
 systray.ready().catch(err => console.error(err));
+
+exitHook(async (cb) => {
+    await systray.kill(false);
+    cb();
+});
 
 fs.access(winStartupPath, _fs.F_OK).then(async () => {
     autostartItem.checked = true;

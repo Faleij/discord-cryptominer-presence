@@ -6,23 +6,35 @@ const rpc = require('./discord');
 const { loadStatsFromMultiple } = require('./claymore-api-utils');
 
 let clearedActivity;
+let noEndpointsReachable = false;
+const addressErrorSet = new Set();
 async function setActivity() {
     try {
         const addresses = settings.miner.address.split(',');
         let stats = await loadStatsFromMultiple(addresses, (err, address) => {
-            console.error(`Error using server ${address}`, err);
-            notifier.notifyError(err, address, address);
-            log(`Error using server ${address}: ` + (err.stack || err.toString()));
+            const addressHadError = addressErrorSet.has(address);
+            if (err) {
+                if (!addressHadError) {
+                    addressErrorSet.add(address);
+                    console.error(`Error using server ${address}`, err);
+                    notifier.notifyError(err, address);
+                    log(`Error using server ${address}: ` + (err.stack || err.toString()));
+                }
+            } else if (addressHadError) {
+                addressErrorSet.delete(address);
+            }
         });
-        addresses.forEach(notifier.clearErrorNotification);
         if (!stats) {
             if (!clearedActivity) {
                 rpc.clearActivity();
                 clearedActivity = true;
             }
-            notifier.notifyError('No miner api endpoints reachable!', '', 'noapi');
+            if (!noEndpointsReachable) {
+                noEndpointsReachable = true;
+                notifier.notifyError('No miner api endpoints reachable!');
+            }
         } else {
-            notifier.clearErrorNotification('noapi');
+            noEndpointsReachable = false;
             // const stats = await claymoreAPI.getStatsJson('localhost', 3333);
             const pool = url.parse(stats.ethash.pool || stats.dcoin.pool).hostname;
             const tempSensors = stats.sensors.filter(c => Number.isFinite(c.temperature));

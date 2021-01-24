@@ -1,12 +1,15 @@
 const _notifier = require('node-notifier');
 const utils = require('node-notifier/lib/utils');
 const os = require('os');
+const fs = require('fs');
 const settings = require('./settings');
 const { execFile } = require('child_process');
 const NotificationCenter = require('node-notifier/notifiers/notificationcenter');
 const WindowsToaster = require('node-notifier/notifiers/toaster');
 const WindowsBalloon = require('node-notifier/notifiers/balloon');
+const path = require('path');
 
+let iconPath = path.join(os.tmpdir(), 'eth.ico');
 const is64Bit = os.arch() === 'x64';
 const osType = utils.isWSL() ? 'WSL' : os.type();
 const options = { withFallback: true };
@@ -41,7 +44,7 @@ switch (osType) {
                 ...options,
             });
             const _notify = notifier.notify;
-            notifier._notify = (opt) => typeof opt === 'string' ? _notify({ title: 'Discord Cryptominer Presence', appID: settings.appID, message: opt }) : _notify(opt);
+            notifier._notify = (opt) => typeof opt === 'string' ? _notify({ title: 'Discord Cryptominer Presence', appID: settings.appID, message: opt, icon: iconPath }) : _notify(opt);
             notifier.Notification = WindowsToaster;
         }
         break;
@@ -51,22 +54,14 @@ switch (osType) {
 
 module.exports = notifier;
 
-const notificationHistory = new Set();
-
-module.exports.notifyError = (err, address = '', id) => {
+module.exports.notifyError = (err, address = '') => {
     const text = address.length ? `[${address}]: ${err}` : err.toString();
-    id = id || text;
-    if (notificationHistory.has(id)) return;
-    notificationHistory.add(id);
     notifier.notify({
         title: 'Error',
         message: text,
         type: 'error',
         appID: settings.appID,
+        icon: iconPath,
     });
-    if (!id) setTimeout(() => notificationHistory.delete(id), 30*60e3);
-};
-
-module.exports.clearErrorNotification = (id) => {
-    notificationHistory.delete(id);
+    return text;
 };

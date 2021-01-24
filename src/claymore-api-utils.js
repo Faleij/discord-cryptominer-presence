@@ -47,7 +47,7 @@ function serializeStat(stat) {
 }
 module.exports.serializeStat = serializeStat;
 
-module.exports.loadStatsFromMultiple = async (addresses = [], onError = (err) => { throw err }) => {
+module.exports.loadStatsFromMultiple = async (addresses = [], callback = (err, address, parsedStats) => { if (err) throw err; }) => {
     let stats;
     await Promise.all(addresses.map(async (address) => {
         try {
@@ -56,8 +56,9 @@ module.exports.loadStatsFromMultiple = async (addresses = [], onError = (err) =>
             const parsed = parseStat(stat);
             if (!stats) stats = parsed;
             else mergeParsedStats(stats, parsed);
+            callback(null, address, parsed);
         } catch (err) {
-            onError(err, address);
+            callback(err, address);
         }
     }));
     if (!stats) return;
