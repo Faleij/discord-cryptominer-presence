@@ -6,22 +6,22 @@ const rpc = require('./discord');
 const { loadStatsFromMultiple } = require('./claymore-api-utils');
 
 let clearedActivity;
-let noEndpointsReachable = false;
-const addressErrorSet = new Set();
+let noEndpointsReachableNotificationId;
+const addressErrorSet = new Map();
 async function setActivity() {
     try {
         const addresses = settings.miner.address.split(',');
         let stats = await loadStatsFromMultiple(addresses, (err, address) => {
-            const addressHadError = addressErrorSet.has(address);
+            const notificationId = addressErrorSet.get(address);
             if (err) {
-                if (!addressHadError) {
-                    addressErrorSet.add(address);
+                if (!notificationId) {
                     console.error(`Error using server ${address}`, err);
-                    notifier.notifyError(err, address);
+                    addressErrorSet.set(address, notifier.notifyError(err, address));
                     log(`Error using server ${address}: ` + (err.stack || err.toString()));
                 }
-            } else if (addressHadError) {
+            } else if (notificationId) {
                 addressErrorSet.delete(address);
+                notifier.notify({ close: notificationId });
             }
         });
         if (!stats) {
@@ -29,12 +29,12 @@ async function setActivity() {
                 rpc.clearActivity();
                 clearedActivity = true;
             }
-            if (!noEndpointsReachable) {
-                noEndpointsReachable = true;
-                notifier.notifyError('No miner api endpoints reachable!');
+            if (!noEndpointsReachableNotificationId) {
+                noEndpointsReachableNotificationId = notifier.notifyError('No miner api endpoints reachable!');
             }
         } else {
-            noEndpointsReachable = false;
+            if (noEndpointsReachableNotificationId) notifier.notify({ close: noEndpointsReachableNotificationId });
+            noEndpointsReachableNotificationId = undefined;
             // const stats = await claymoreAPI.getStatsJson('localhost', 3333);
             const pool = url.parse(stats.ethash.pool || stats.dcoin.pool).hostname;
             const tempSensors = stats.sensors.filter(c => Number.isFinite(c.temperature));

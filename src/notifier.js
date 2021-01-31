@@ -44,7 +44,7 @@ switch (osType) {
                 ...options,
             });
             const _notify = notifier.notify;
-            notifier._notify = (opt) => typeof opt === 'string' ? _notify({ title: 'Discord Cryptominer Presence', appID: settings.appID, message: opt, icon: iconPath }) : _notify(opt);
+            notifier._notify = (opt) => typeof opt === 'string' ? _notify({ title: 'Discord Cryptominer Presence', appID: settings.appID, message: opt, icon: iconPath }) : _notify({ appID: settings.appID, ...opt });
             notifier.Notification = WindowsToaster;
         }
         break;
@@ -54,14 +54,19 @@ switch (osType) {
 
 module.exports = notifier;
 
+let idn = 1;
 module.exports.notifyError = (err, address = '') => {
     const text = address.length ? `[${address}]: ${err}` : err.toString();
+    const id = idn++;
     notifier.notify({
         title: 'Error',
         message: text,
         type: 'error',
         appID: settings.appID,
         icon: iconPath,
+        id,
+        wait: true,
     });
-    return text;
+    if (idn === Number.MAX_SAFE_INTEGER) idn = 1;
+    return id;
 };
