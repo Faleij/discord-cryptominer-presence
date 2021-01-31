@@ -17,7 +17,7 @@ jobs:
       - name: Set env
         run: |
           echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-          echo "BUILD_NAME=discord-cryptominer-presence_win64-${{ env.RELEASE_VERSION }}" >> $GITHUB_ENV
+          echo "BUILD_NAME=discord-cryptominer-presence_win64-${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       
       - name: Install NodeJS
         uses: actions/setup-node@v1
@@ -41,7 +41,10 @@ jobs:
       
       - name: Create SHA3 file for archive
         id: sha3-hash
-        run: cd dist && sha3sum ${{ env.BUILD_NAME }}.zip > ${{ env.BUILD_NAME }}.sha3 && echo '::set-output name=sha3::$(<${{ env.BUILD_NAME }}.sha3)'
+        run: |
+          cd dist
+          sha3sum ${{ env.BUILD_NAME }}.zip > ${{ env.BUILD_NAME }}.sha3
+          echo ""::set-output name=sha3::$(cat ${{ env.BUILD_NAME }}.sha3)"
 
       - name: Draft Release
         id: create_release
@@ -51,7 +54,10 @@ jobs:
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
           release_name: ${{ env.RELEASE_VERSION }}
-          body: \n${{ steps.sha3-hash.outputs.sha3 }}
+          body: |
+            *
+            SHA3:
+            ${{ steps.sha3-hash.outputs.sha3 }}
           draft: true
           prerelease: false
       
