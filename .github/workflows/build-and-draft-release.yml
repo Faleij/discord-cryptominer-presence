@@ -44,7 +44,7 @@ jobs:
         run: |
           cd dist
           sha3sum ${{ env.BUILD_NAME }}.zip > ${{ env.BUILD_NAME }}.sha3
-          echo ""::set-output name=sha3::$(cat ${{ env.BUILD_NAME }}.sha3)"
+          echo "::set-output name=sha3::$(cat ${{ env.BUILD_NAME }}.sha3)"
 
       - name: Draft Release
         id: create_release
